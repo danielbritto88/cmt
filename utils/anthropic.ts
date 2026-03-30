@@ -5,10 +5,6 @@ import { CMT_CONFIG } from '../config/maestro';
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-// ─────────────────────────────────────────────
-// INTERFACE DE CHAMADA
-// ─────────────────────────────────────────────
-
 export interface CallOptions {
     tier: ModelTier;
     system: string;
@@ -25,10 +21,6 @@ export interface CallResult {
     model: string;
 }
 
-// ─────────────────────────────────────────────
-// CHAMADA PRINCIPAL COM RETRY
-// ─────────────────────────────────────────────
-
 export async function callClaude(options: CallOptions): Promise<CallResult> {
     const { tier, system, messages, maxTokens = 4096, agentName = 'agente' } = options;
     const model = getModelString(tier);
@@ -42,20 +34,34 @@ export async function callClaude(options: CallOptions): Promise<CallResult> {
 
     for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
         try {
-            const response = await client.messages.create({
+            let content = '';
+            let inputTokens = 0;
+            let outputTokens = 0;
+
+            const stream = await client.messages.stream({
                 model,
                 max_tokens: maxTokens,
                 system,
                 messages,
             });
 
-            const content = response.content
-                .filter(block => block.type === 'text')
-                .map(block => (block as { type: 'text'; text: string }).text)
-                .join('');
+            for await (const event of stream) {
+                if (
+                    event.type === 'content_block_delta' &&
+                    event.delta.type === 'text_delta'
+                ) {
+                    content += event.delta.text;
+                }
 
-            const inputTokens = response.usage.input_tokens;
-            const outputTokens = response.usage.output_tokens;
+                if (event.type === 'message_delta' && event.usage) {
+                    outputTokens = event.usage.output_tokens;
+                }
+
+                if (event.type === 'message_start' && event.message.usage) {
+                    inputTokens = event.message.usage.input_tokens;
+                }
+            }
+
             const costUSD = estimateCost(tier, inputTokens, outputTokens);
 
             if (CMT_CONFIG.verbose) {
