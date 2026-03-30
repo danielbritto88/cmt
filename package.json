@@ -3,11 +3,21 @@
     "version": "1.0.0",
     "description": "CMT 1.0 — Workflow Multi-Agent de Inteligência Artificial",
     "main": "dist/cli/index.js",
+    "bin": {
+        "cmt": "dist/cli/index.js"
+    },
+    "files": [
+        "dist/",
+        ".env.example",
+        "project-context.md",
+        "README.md"
+    ],
     "scripts": {
         "build": "tsc",
         "dev": "ts-node cli/index.ts",
         "cmt": "node dist/cli/index.js",
-        "start": "npm run build && npm run cmt"
+        "start": "npm run build && npm run cmt",
+        "prepare": "npm run build"
     },
     "keywords": [
         "ai",
