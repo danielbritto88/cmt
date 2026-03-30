@@ -4,6 +4,7 @@ import { AgentInput, AgentOutput } from '../types/index';
 import { routeModel } from './guardian';
 import { TASK_LIMITS } from '../config/limits';
 import { CMT_CONFIG } from '../config/maestro';
+import { extractFilesFromResult, writeFilesToProject } from '../utils/file-writer';
 
 // ─────────────────────────────────────────────
 // CONTEXTOS INJETÁVEIS POR TIPO DE TAREFA
@@ -55,6 +56,20 @@ Regras:
 - Não adicione explicações longas — o resultado deve falar por si.
 - Se for código: entregue apenas o código, sem comentários desnecessários.
 - Se for texto: entregue o texto final, sem meta-comentários.
+
+IMPORTANTE — Criação de arquivos:
+Quando a tarefa exigir criar ou modificar arquivos no projeto, use OBRIGATORIAMENTE este formato:
+
+// FILE: caminho/relativo/do/arquivo.ext
+conteúdo do arquivo aqui
+// END_FILE
+
+Exemplo:
+// FILE: CLARA_ROADMAP.md
+# Conteúdo do arquivo
+// END_FILE
+
+Use caminhos relativos à raiz do projeto. Nunca caminhos absolutos.
 ${extraContext ? `\n${extraContext}` : ''}`;
 }
 
@@ -123,6 +138,13 @@ export async function runExecutor(input: AgentInput): Promise<AgentOutput> {
 
     if (CMT_CONFIG.verbose) {
         console.log(`[Executor] Resultado gerado (${result.inputTokens + result.outputTokens} tokens)`);
+    }
+
+    // ── Extrai e escreve arquivos se houver ──
+    const files = extractFilesFromResult(result.content);
+    if (files.length > 0) {
+        console.log(`\n[Executor] ${files.length} arquivo(s) detectado(s) para criação...`);
+        writeFilesToProject(files);
     }
 
     return {
