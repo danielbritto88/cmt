@@ -1,0 +1,31 @@
+{
+    "name": "cmt",
+    "version": "1.0.0",
+    "description": "CMT 1.0 — Workflow Multi-Agent de Inteligência Artificial",
+    "main": "dist/cli/index.js",
+    "scripts": {
+        "build": "tsc",
+        "dev": "ts-node cli/index.ts",
+        "cmt": "node dist/cli/index.js",
+        "start": "npm run build && npm run cmt"
+    },
+    "keywords": [
+        "ai",
+        "multi-agent",
+        "workflow",
+        "anthropic",
+        "claude"
+    ],
+    "author": "",
+    "license": "MIT",
+    "dependencies": {
+        "@anthropic-ai/sdk": "^0.39.0",
+        "dotenv": "^16.4.5",
+        "zod": "^3.23.8"
+    },
+    "devDependencies": {
+        "@types/node": "^22.0.0",
+        "typescript": "^5.5.0",
+        "ts-node": "^10.9.2"
+    }
+}
