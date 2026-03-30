@@ -16,8 +16,7 @@
         "build": "tsc",
         "dev": "ts-node cli/index.ts",
         "cmt": "node dist/cli/index.js",
-        "start": "npm run build && npm run cmt",
-        "prepare": "npm run build"
+        "start": "npm run build && npm run cmt"
     },
     "keywords": [
         "ai",
