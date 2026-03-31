@@ -6,6 +6,7 @@ import { AgentInput, Briefing, TaskType, ComplexityLevel } from '../types/index'
 import { routeModel, estimateTokens } from './guardian';
 import { CMT_CONFIG } from '../config/maestro';
 import { getSessionSummary } from '../utils/session-memory';
+import { readFileFromProject } from '../utils/file-writer';
 
 // ─────────────────────────────────────────────
 // CONTEXTO DE PROJETO
@@ -20,6 +21,14 @@ function loadProjectContext(): string {
         }
     } catch {
         // falha silenciosa — contexto de projeto é opcional
+    }
+    return '';
+}
+
+function loadRoadmap(): string {
+    const content = readFileFromProject('CLARA_ROADMAP.md');
+    if (content) {
+        return `Plano de ação atual (CLARA_ROADMAP.md):\n${content}`;
     }
     return '';
 }
@@ -99,11 +108,19 @@ export async function runAnalyst(input: AgentInput): Promise<Briefing> {
     }
 
     const projectContext = loadProjectContext();
+    const roadmap = loadRoadmap();
     const sessionSummary = getSessionSummary();
     const contextParts: string[] = [];
 
     if (projectContext) {
         contextParts.push(`Contexto do projeto:\n${projectContext}`);
+    }
+
+    if (roadmap) {
+        contextParts.push(roadmap);
+        if (CMT_CONFIG.verbose) {
+            console.log(`[Analista] CLARA_ROADMAP.md carregado.`);
+        }
     }
 
     if (sessionSummary) {

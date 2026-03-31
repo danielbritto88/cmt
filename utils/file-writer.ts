@@ -89,3 +89,19 @@ export function writeFileDirectly(filePath: string, content: string): void {
     fs.writeFileSync(absolutePath, content, 'utf-8');
     console.log(`[FileWriter] ✓ Arquivo criado: ${absolutePath}`);
 }
+
+// ─────────────────────────────────────────────
+// LÊ UM ARQUIVO DO PROJETO
+// ─────────────────────────────────────────────
+
+export function readFileFromProject(filePath: string): string {
+    const absolutePath = path.join(PROJECT_ROOT, filePath);
+    try {
+        if (fs.existsSync(absolutePath)) {
+            return fs.readFileSync(absolutePath, 'utf-8');
+        }
+    } catch {
+        // falha silenciosa
+    }
+    return '';
+}
